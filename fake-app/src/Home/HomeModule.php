@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PgFramework\Home;
+namespace PgFramework\App\Home;
 
 use PgFramework\Module;
 
 class HomeModule extends Module
 {
-
 }

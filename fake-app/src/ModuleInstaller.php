@@ -31,7 +31,7 @@ class ModuleInstaller implements
      * Recreates PgFramework Module path map, based on composer information
      * and available app plugins.
      *
-     * @param Event $event Composer's event object.
+     * @param  Event $event Composer's event object.
      * @return void
      */
     public static function run(Event $event): void
@@ -43,7 +43,6 @@ class ModuleInstaller implements
         $instance->composer = $composer;
         $instance->io = $io;
         $instance->postAutoloadDump($event);
-
     }
 
     /**
@@ -85,7 +84,7 @@ class ModuleInstaller implements
      * Recreates PgFramework Module path map, based on composer information
      * and available app plugins.
      *
-     * @param Event $event Composer's event object.
+     * @param  Event $event Composer's event object.
      * @return void
      */
     public function postAutoloadDump(Event $event): void
@@ -103,7 +102,7 @@ class ModuleInstaller implements
     }
 
     /**
-     * @param BasePackage[] $packages
+     * @param  BasePackage[] $packages
      * @return array
      */
     protected function findModulePackage(array $packages): array
@@ -195,7 +194,9 @@ class ModuleInstaller implements
 
     protected function getModulesClass(array $files): array
     {
-        /** @var SplFileInfo $file */
+        /**
+ * @var SplFileInfo $file
+*/
         foreach ($files as $file) {
             $content = file_get_contents((string)$file);
             if (
@@ -269,7 +270,7 @@ class ModuleInstaller implements
             }
             if ($writeFile) {
                 $modulesStr = trim($modulesStr);
-                return (bool)$this->writeFile($configFile, $useStr,"\t\t" . $modulesStr);
+                return (bool)$this->writeFile($configFile, $useStr, "\t\t" . $modulesStr);
             }
         }
         return true;
@@ -280,7 +281,7 @@ class ModuleInstaller implements
         $content = <<<php
 <?php
 
-/* This file is auto generated, do not edit */
+/** This file is auto generated, do not edit */
 
 declare(strict_types=1);
 

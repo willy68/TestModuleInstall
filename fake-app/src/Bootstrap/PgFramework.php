@@ -10,8 +10,8 @@ use PgFramework\FakeModule\RouterModule;
 
 return [
     'modules' => [
-		AuthModule::class,
-		FakeModule::class,
-		RouterModule::class,
+        AuthModule::class,
+        FakeModule::class,
+        RouterModule::class,
     ]
 ];
