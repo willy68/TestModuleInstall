@@ -1,0 +1,95 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "e87cea6cbb36873b21670b632a448c5c",
+    "packages": [
+        {
+            "name": "willy68/fake-module",
+            "version": "1.0.1",
+            "dist": {
+                "type": "path",
+                "url": "../fake-module",
+                "reference": "7cdbd7dda6c604f4e6c31830a68449e480927538"
+            },
+            "require": {
+                "php": "8.0 || 8.1",
+                "willy68/pgmodule": "^1.0"
+            },
+            "type": "pg-module",
+            "extra": {
+                "PgFramework": {
+                    "module": "PgFramework\\FakeModule\\FakeModule"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "PgFramework\\FakeModule\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Lety",
+                    "email": "william.lety@gmail.com"
+                }
+            ],
+            "description": "Fake module for pg-module-installer test",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "willy68/pgmodule",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/willy68/PgModule.git",
+                "reference": "ea5bef9332260a61f5fff12e788d81a72492117d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/willy68/PgModule/zipball/ea5bef9332260a61f5fff12e788d81a72492117d",
+                "reference": "ea5bef9332260a61f5fff12e788d81a72492117d",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PgFramework\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Lety",
+                    "email": "william.lety@gmail.com"
+                }
+            ],
+            "description": "Module for PgFramework",
+            "support": {
+                "issues": "https://github.com/willy68/PgModule/issues",
+                "source": "https://github.com/willy68/PgModule/tree/v1.0.0"
+            },
+            "time": "2023-02-16T20:11:00+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": "8.0 || 8.1"
+    },
+    "platform-dev": [],
+    "plugin-api-version": "2.2.0"
+}
