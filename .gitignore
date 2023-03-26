@@ -1,4 +1,5 @@
 # Cache, session files and logs (Symfony3)
 .idea
-vendor
-/fake-app/vendor/
+vendor/*
+/fake-app/vendor
+/fake-app/vendor/willy68/
