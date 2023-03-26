@@ -97,10 +97,9 @@ class ModuleInstaller implements
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getPackages();
         $this->io->write('<info>Search modules packages</info>');
         $modules = $this->findModulePackage($packages);
-        var_dump($modules);
 
         $configFile = $this->getConfigFile($projectDir);
-        $this->writeConfigFile($configFile, $modules);
+        $this->writeConfigFile($configFile);
     }
 
     /**
@@ -241,7 +240,7 @@ class ModuleInstaller implements
             $substr = $m[1];
             foreach ($this->modules as $namespace => $classModules) {
                 foreach ($classModules as $useStatement => $classModule) {
-                    $substr .= "\t$classModule::class,\r";
+                    $substr .= "\t$classModule::class,\n";
                 }
             }
             var_dump($substr);
