@@ -1,0 +1,56 @@
+.project
+.buildpath
+.settings
+*.log
+*.db
+*.swp
+*/vendor/*
+composer.lock
+.phpunit.result.cache
+tests/html
+
+# IDEs and editors
+.idea
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.editorconfig
+*.code-workspace
+
+# IDE - VSCode
+.vscode/*
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+
+# System Files
+.DS_Store
+Thumbs.db
+
+#
+bin/*
+!bin/.gitkeep
+.env.local
+/config/database.php
+database.php
+*~
+/generated_models
+/generated_routes
+/generated_controllers
+routes.xml
+tmp
+/.vs/slnx.sqlite
+node_modules
+public/assets/js/*
+!public/assets/js/.gitkeep
+app/Proxies/*
+!app/Proxies/.gitkeep

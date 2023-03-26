@@ -1,0 +1,28 @@
+{
+    "name": "willy68/fake-module",
+    "description": "Fake module for pg-module-installer test",
+    "type": "pg-module",
+    "version": "1.0.1",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "PgFramework\\FakeModule\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "William Lety",
+            "email": "william.lety@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "8.0 || 8.1",
+        "willy68/pgmodule": "^1.0"
+    },
+    "extra": {
+        "PgFramework": {
+            "module": "PgFramework\\FakeModule\\FakeModule"
+        }
+    }
+}
