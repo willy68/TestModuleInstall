@@ -1,6 +1,6 @@
 <?php
 
-use PgFramework\FakeModule\RouterModule;
+declare(strict_types=1);
 
 return [
     'modules' => [
