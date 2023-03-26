@@ -95,7 +95,7 @@ class ModuleInstaller implements
         $projectDir = dirname($vendorDir);
 
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getPackages();
-        $this->io->write('<info>Search modules packages</info>');
+        $this->io->write('<info>Search pg-modules packages</info>');
         $this->findModulePackage($packages);
 
         $configFile = $this->getConfigFile($projectDir);
@@ -113,7 +113,7 @@ class ModuleInstaller implements
             if ($package->getType() === 'pg-module') {
                 $this->io->write(
                     sprintf(
-                        '<info>  Find "pg-module" type package: %s</info>',
+                        '<info>  Found pg-module type package: %s</info>',
                         $package->getPrettyName()
                     )
                 );
@@ -210,7 +210,7 @@ class ModuleInstaller implements
                 $this->modules[$namespace][$namespace . '\\' . $moduleName] = $moduleName;
                 $this->io->write(
                     sprintf(
-                        '<info>      Find "pg-module": %s</info>',
+                        '<info>      Found pg-module: %s</info>',
                         $moduleName
                     )
                 );

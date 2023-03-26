@@ -11,7 +11,7 @@ use PgFramework\FakeModule\RouterModule;
 return [
     'modules' => [
 		AuthModule::class,
-   		FakeModule::class,
+		FakeModule::class,
 		RouterModule::class,
     ]
 ];
