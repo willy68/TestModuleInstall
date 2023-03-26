@@ -236,14 +236,23 @@ class ModuleInstaller implements
             return false;
         }
         $content = file_get_contents($configFile);
-        if (preg_match('/\'modules\'\s+=>\s+\[([\s+\W\w]+)]\s+/', $content, $m)) {
-            $substr = $m[1];
+        $regex = '/declare\(strict_types=1\);\s+([\w\W]*)\s+return\s+\[\s+\'modules\'\s+=>\s+\[([\s+\W\w]+)]\s+/';
+        if (preg_match($regex, $content, $m)) {
+            $useStr = $m[1];
+            $modulesStr = $m[2];
             foreach ($this->modules as $namespace => $classModules) {
                 foreach ($classModules as $useStatement => $classModule) {
-                    $substr .= "\t$classModule::class,\n";
+                    if (str_contains($content, $classModule . '::class')) {
+                        continue;
+                    }
+                    $modulesStr .= "\t$classModule::class,\n";
+                    if (!$useStr) {
+                        $useStr = "\n";
+                    }
+                    $useStr .= "use $useStatement;\n";
                 }
             }
-            var_dump($substr);
+            var_dump($useStr, $modulesStr);
         }
         return true;
     }

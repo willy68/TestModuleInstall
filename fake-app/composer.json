@@ -22,7 +22,7 @@
         }
     ],
     "require": {
-        "php": "8.0 || 8.1",
+        "php": "^8.0 || ^8.1",
         "willy68/fake-module": "1.0.*"
     },
     "require-dev": {
