@@ -56,3 +56,5 @@ public/assets/js/*
 !public/assets/js/.gitkeep
 app/Proxies/*
 !app/Proxies/.gitkeep
+/fake-module/vendor/
+/fake-app/vendor/willy68/fake-module/
