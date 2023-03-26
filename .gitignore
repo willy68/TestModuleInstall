@@ -1,4 +1,4 @@
 # Cache, session files and logs (Symfony3)
 .idea
-*/vendor/
+*/vendor
 
