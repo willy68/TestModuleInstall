@@ -96,7 +96,7 @@ class ModuleInstaller implements
 
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getPackages();
         $this->io->write('<info>Search modules packages</info>');
-        $modules = $this->findModulePackage($packages);
+        $this->findModulePackage($packages);
 
         $configFile = $this->getConfigFile($projectDir);
         $this->writeConfigFile($configFile);
@@ -241,14 +241,13 @@ class ModuleInstaller implements
             $writeFile = false;
             $useStr = $m[1];
             $modulesStr = $m[2];
-            foreach ($this->modules as $namespace => $classModules) {
+            foreach ($this->modules as $classModules) {
                 foreach ($classModules as $useStatement => $classModule) {
                     if (str_contains($content, $classModule . '::class')) {
                         $this->io->write(
                             sprintf(
                                 '<info>Module %s already exist in config file</info>',
-                                $classModule,
-                                $configFile
+                                $classModule
                             )
                         );
                         continue;
