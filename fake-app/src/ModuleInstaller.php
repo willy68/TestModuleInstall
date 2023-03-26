@@ -236,24 +236,59 @@ class ModuleInstaller implements
             return false;
         }
         $content = file_get_contents($configFile);
-        $regex = '/declare\(strict_types=1\);\s+([\w\W]*)\s+return\s+\[\s+\'modules\'\s+=>\s+\[([\s+\W\w]+)]\s+/';
+        $regex = '/declare\(strict_types=1\);\s+([\w\W]*)\s+return\s+\[\s+\'modules\'\s+=>\s+\[\s+([\W\w]+)\s+]\s+/';
         if (preg_match($regex, $content, $m)) {
             $useStr = $m[1];
             $modulesStr = $m[2];
             foreach ($this->modules as $namespace => $classModules) {
                 foreach ($classModules as $useStatement => $classModule) {
                     if (str_contains($content, $classModule . '::class')) {
+                        $this->io->write(
+                            sprintf(
+                                '<info>    Module %s already exist in this config file: %s</info>',
+                                $classModule,
+                                $configFile
+                            )
+                        );
                         continue;
                     }
-                    $modulesStr .= "\t$classModule::class,\n";
+                    $modulesStr .= "\t\t$classModule::class,\n";
                     if (!$useStr) {
-                        $useStr = "\n";
+                        $useStr = "";
                     }
                     $useStr .= "use $useStatement;\n";
+
+                    $this->io->write(
+                        sprintf(
+                            '<info>    Write module %s in this config file: %s</info>',
+                            $classModule,
+                            $configFile
+                        )
+                    );
                 }
             }
-            var_dump($useStr, $modulesStr);
+            return (bool)$this->writeFile($configFile, $useStr, rtrim($modulesStr, "\n"));
         }
         return true;
+    }
+
+    protected function writeFile(string $configFile, string $useStr, string $modulesStr): bool|int
+    {
+        $content = <<<php
+<?php
+
+/* This file is auto generated, do not edit */
+
+declare(strict_types=1);
+
+%s
+return [
+    'modules' => [
+%s
+    ]
+];
+
+php;
+        return file_put_contents($configFile, sprintf($content, $useStr, $modulesStr), LOCK_EX);
     }
 }
