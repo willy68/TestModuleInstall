@@ -4,7 +4,9 @@
 *.log
 *.db
 *.swp
-*/vendor/*
+vendor
+./fake-app/vendor/willy68/fake-module
+./fake-module/vendor
 composer.lock
 .phpunit.result.cache
 tests/html
