@@ -269,7 +269,7 @@ class ModuleInstaller implements
             }
             if ($writeFile) {
                 $modulesStr = trim($modulesStr);
-                return (bool)$this->writeFile($configFile, $useStr, rtrim("\t\t" . $modulesStr, "\n"));
+                return (bool)$this->writeFile($configFile, $useStr,"\t\t" . $modulesStr);
             }
         }
         return true;
