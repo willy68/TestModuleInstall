@@ -1,0 +1,33 @@
+{
+    "name": "willy68/fake-app",
+    "description": "Fake app for testing pg-module-installer",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "PgFramework\\App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "William Lety",
+            "email": "william.lety@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../fake-module"
+        }
+    ],
+    "require": {
+        "php": "8.0 || 8.1",
+        "willy68/fake-module": "1.0.*"
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "PgFramework\\App\\ModuleInstaller::run"
+        ]
+    }
+}
