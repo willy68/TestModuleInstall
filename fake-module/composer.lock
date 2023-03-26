@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bcc4bc88f70c7ee018ae1e21b0888d2b",
+    "content-hash": "77f8d6cf540dcd39aca057648d3a2a07",
     "packages": [
         {
             "name": "willy68/pgmodule",
