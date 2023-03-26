@@ -238,6 +238,7 @@ class ModuleInstaller implements
         $content = file_get_contents($configFile);
         $regex = '/declare\(strict_types=1\);\s+([\w\W]*)\s+return\s+\[\s+\'modules\'\s+=>\s+\[\s+([\W\w]+)\s+]\s+/';
         if (preg_match($regex, $content, $m)) {
+            $writeFile = false;
             $useStr = $m[1];
             $modulesStr = $m[2];
             foreach ($this->modules as $namespace => $classModules) {
@@ -245,13 +246,14 @@ class ModuleInstaller implements
                     if (str_contains($content, $classModule . '::class')) {
                         $this->io->write(
                             sprintf(
-                                '<info>    Module %s already exist in this config file: %s</info>',
+                                '<info>Module %s already exist in config file</info>',
                                 $classModule,
                                 $configFile
                             )
                         );
                         continue;
                     }
+                    $writeFile = true;
                     $modulesStr .= "\t\t$classModule::class,\n";
                     if (!$useStr) {
                         $useStr = "";
@@ -260,14 +262,16 @@ class ModuleInstaller implements
 
                     $this->io->write(
                         sprintf(
-                            '<info>    Write module %s in this config file: %s</info>',
-                            $classModule,
-                            $configFile
+                            '<info>Write module %s in config file</info>',
+                            $classModule
                         )
                     );
                 }
             }
-            return (bool)$this->writeFile($configFile, $useStr, rtrim($modulesStr, "\n"));
+            if ($writeFile) {
+                $modulesStr = trim($modulesStr);
+                return (bool)$this->writeFile($configFile, $useStr, rtrim("\t\t" . $modulesStr, "\n"));
+            }
         }
         return true;
     }
