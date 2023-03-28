@@ -95,19 +95,20 @@ class ModuleInstaller implements
 
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getPackages();
         $this->io->write('<info>Search pg-modules packages</info>');
-        $this->findModulePackage($packages);
+        $packages = $this->findModulesPackages($packages);
+        if (empty($packages)) {
+            $this->io->write('<info>pg-modules packages not found, abort</info>');
+            return;
+        }
+        $this->findModulesClass($packages);
 
         $configFile = $this->getConfigFile($projectDir);
         $this->writeConfigFile($configFile);
     }
 
-    /**
-     * @param  BasePackage[] $packages
-     * @return array
-     */
-    protected function findModulePackage(array $packages): array
+    protected function findModulesPackages(array $packages): array
     {
-        $modules = [];
+        $modulesPackages = [];
         foreach ($packages as $package) {
             if ($package->getType() === 'pg-module') {
                 $this->io->write(
@@ -116,9 +117,22 @@ class ModuleInstaller implements
                         $package->getPrettyName()
                     )
                 );
-                $path = $this->composer->getInstallationManager()->getInstallPath($package);
-                $modules = $this->findModuleClass($package, $path);
+                $modulesPackages[] = $package;
             }
+        }
+        return $modulesPackages;
+    }
+
+    /**
+     * @param BasePackage[] $packages
+     * @return array
+     */
+    protected function findModulesClass(array $packages): array
+    {
+        $modules = [];
+        foreach ($packages as $package) {
+            $path = $this->composer->getInstallationManager()->getInstallPath($package);
+            $modules = $this->findModuleClass($package, $path);
         }
         return $modules;
     }
@@ -195,8 +209,8 @@ class ModuleInstaller implements
     protected function getModulesClass(array $files): array
     {
         /**
- * @var SplFileInfo $file
-*/
+         * @var SplFileInfo $file
+         */
         foreach ($files as $file) {
             $content = file_get_contents((string)$file);
             if (
@@ -234,6 +248,12 @@ class ModuleInstaller implements
     protected function writeConfigFile(string $configFile): bool
     {
         if (!is_file($configFile)) {
+            $this->io->write(
+                sprintf(
+                    '<info>Config file %s don\'t exists in this système, abort</info>',
+                    $configFile
+                )
+            );
             return false;
         }
         $content = file_get_contents($configFile);
@@ -241,10 +261,15 @@ class ModuleInstaller implements
         if (preg_match($regex, $content, $m)) {
             $writeFile = false;
             $useStr = $m[1];
+            if (!$useStr) {
+                $useStr = "";
+            }
+            $useStr = trim($useStr);
+            $useStr = $useStr . "\n";
             $modulesStr = $m[2];
             foreach ($this->modules as $classModules) {
                 foreach ($classModules as $useStatement => $classModule) {
-                    if (str_contains($content, $classModule . '::class')) {
+                    if (str_contains($modulesStr, $classModule . '::class')) {
                         $this->io->write(
                             sprintf(
                                 '<info>Module %s already exist in config file</info>',
@@ -255,9 +280,6 @@ class ModuleInstaller implements
                     }
                     $writeFile = true;
                     $modulesStr .= "\t\t$classModule::class,\n";
-                    if (!$useStr) {
-                        $useStr = "";
-                    }
                     $useStr .= "use $useStatement;\n";
 
                     $this->io->write(
@@ -269,11 +291,13 @@ class ModuleInstaller implements
                 }
             }
             if ($writeFile) {
+                $useStr = trim($useStr);
                 $modulesStr = trim($modulesStr);
                 return (bool)$this->writeFile($configFile, $useStr, "\t\t" . $modulesStr);
             }
         }
-        return true;
+        $this->io->write('<info>Nothing to update in config file.</info>');
+        return false;
     }
 
     protected function writeFile(string $configFile, string $useStr, string $modulesStr): bool|int
@@ -286,6 +310,7 @@ class ModuleInstaller implements
 declare(strict_types=1);
 
 %s
+
 return [
     'modules' => [
 %s
