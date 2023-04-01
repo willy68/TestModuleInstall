@@ -24,6 +24,15 @@ class ModuleInstaller implements
     private Composer $composer;
     private IOInterface $io;
     private array $modules = [];
+    private int $writeLockEx = LOCK_EX;
+
+    /**
+     * @param int $writeLockEx
+     */
+    public function setWriteLockEx(int $writeLockEx = 0): void
+    {
+        $this->writeLockEx = $writeLockEx;
+    }
 
     /**
      * Called whenever composer (re)generates the autoloader.
@@ -31,7 +40,7 @@ class ModuleInstaller implements
      * Recreates PgFramework Module path map, based on composer information
      * and available app plugins.
      *
-     * @param  Event $event Composer's event object.
+     * @param Event $event Composer's event object.
      * @return void
      */
     public static function run(Event $event): void
@@ -84,7 +93,7 @@ class ModuleInstaller implements
      * Recreates PgFramework Module path map, based on composer information
      * and available app plugins.
      *
-     * @param  Event $event Composer's event object.
+     * @param Event $event Composer's event object.
      * @return void
      */
     public function postAutoloadDump(Event $event): void
@@ -95,19 +104,24 @@ class ModuleInstaller implements
 
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getPackages();
         $this->io->write('<info>Search pg-modules packages</info>');
-        $this->findModulePackage($packages);
+        $packages = $this->findModulesPackages($packages);
+        if (empty($packages)) {
+            $this->io->write('<info>pg-modules packages not found, abort</info>');
+            return;
+        }
+        $modules = $this->findModulesClass($packages);
+        if (empty($modules)) {
+            $this->io->write('<info>pg-modules not found in packages, abort</info>');
+            return;
+        }
 
         $configFile = $this->getConfigFile($projectDir);
-        $this->writeConfigFile($configFile);
+        $this->writeConfigFile($configFile, $modules);
     }
 
-    /**
-     * @param  BasePackage[] $packages
-     * @return array
-     */
-    protected function findModulePackage(array $packages): array
+    public function findModulesPackages(array $packages): array
     {
-        $modules = [];
+        $modulesPackages = [];
         foreach ($packages as $package) {
             if ($package->getType() === 'pg-module') {
                 $this->io->write(
@@ -116,14 +130,38 @@ class ModuleInstaller implements
                         $package->getPrettyName()
                     )
                 );
-                $path = $this->composer->getInstallationManager()->getInstallPath($package);
-                $modules = $this->findModuleClass($package, $path);
+                $modulesPackages[] = $package;
             }
+        }
+        return $modulesPackages;
+    }
+
+    public function getConfigFile(string $projectDir): string
+    {
+        return $projectDir .
+            DIRECTORY_SEPARATOR .
+            'src' .
+            DIRECTORY_SEPARATOR .
+            'Bootstrap' .
+            DIRECTORY_SEPARATOR .
+            'PgFramework.php';
+    }
+
+    /**
+     * @param BasePackage[] $packages
+     * @return array
+     */
+    public function findModulesClass(array $packages): array
+    {
+        $modules = [];
+        foreach ($packages as $package) {
+            $path = $this->composer->getInstallationManager()->getInstallPath($package);
+            $modules = $this->findModuleClass($package, $path);
         }
         return $modules;
     }
 
-    protected function findModuleClass(BasePackage $package, string $packagePath): array
+    public function findModuleClass(BasePackage $package, string $packagePath): array
     {
         $modules = [];
         $autoload = $package->getAutoload();
@@ -134,7 +172,7 @@ class ModuleInstaller implements
 
             $paths = $this->mapNamespacePaths($pathMap, $packagePath);
             foreach ($paths as $path) {
-                $files = $this->getPhpFile($path);
+                $files = $this->getPhpFiles($path);
                 if (!empty($files)) {
                     $modules = $this->getModulesClass($files);
                 }
@@ -143,7 +181,7 @@ class ModuleInstaller implements
         return $modules;
     }
 
-    protected function mapNamespacePaths(array $pathMap, string $packagePath): array
+    public function mapNamespacePaths(array $pathMap, string $packagePath): array
     {
         $result = [];
         foreach ($pathMap as $namespace => $paths) {
@@ -161,7 +199,7 @@ class ModuleInstaller implements
         return $result;
     }
 
-    protected function getPhpFile(array $result): array
+    public function getPhpFiles(array $result): array
     {
         $files = [];
         foreach ($result as $dir) {
@@ -192,11 +230,10 @@ class ModuleInstaller implements
         );
     }
 
-    protected function getModulesClass(array $files): array
+    public function getModulesClass(array $files): array
     {
-        /**
- * @var SplFileInfo $file
-*/
+        $modules = [];
+        /** @var SplFileInfo $file */
         foreach ($files as $file) {
             $content = file_get_contents((string)$file);
             if (
@@ -208,7 +245,7 @@ class ModuleInstaller implements
             ) {
                 $namespace = $m[1];
                 $moduleName = $m[2];
-                $this->modules[$namespace][$namespace . '\\' . $moduleName] = $moduleName;
+                $this->modules[$namespace . '\\' . $moduleName] = $moduleName;
                 $this->io->write(
                     sprintf(
                         '<info>      Found pg-module: %s</info>',
@@ -220,63 +257,61 @@ class ModuleInstaller implements
         return $this->modules;
     }
 
-    protected function getConfigFile(string $projectDir): string
-    {
-        return $projectDir .
-            DIRECTORY_SEPARATOR .
-            'src' .
-            DIRECTORY_SEPARATOR .
-            'Bootstrap' .
-            DIRECTORY_SEPARATOR .
-            'PgFramework.php';
-    }
-
-    protected function writeConfigFile(string $configFile): bool
+    public function writeConfigFile(string $configFile, array $modules): bool
     {
         if (!is_file($configFile)) {
-            return false;
+            $this->io->write(
+                sprintf(
+                    "<info>Config file\n %s \n don't exist in this project, writing dummy file</info>",
+                    $configFile
+                )
+            );
+            $this->writeFile($configFile, '', '');
         }
+
         $content = file_get_contents($configFile);
-        $regex = '/declare\(strict_types=1\);\s+([\w\W]*)\s+return\s+\[\s+\'modules\'\s+=>\s+\[\s+([\W\w]+)\s+]\s+/';
+        $regex = '/declare\S+\s*;\s+([use\S\s]*)\s+return\s+\[\s+\'modules\'\s+=>\s+\[\s+([\S\s]+)\s+]\s+/';
         if (preg_match($regex, $content, $m)) {
             $writeFile = false;
             $useStr = $m[1];
+            if (!$useStr) {
+                $useStr = "";
+            }
+            $useStr = trim($useStr) . "\n";
             $modulesStr = $m[2];
-            foreach ($this->modules as $classModules) {
-                foreach ($classModules as $useStatement => $classModule) {
-                    if (str_contains($content, $classModule . '::class')) {
-                        $this->io->write(
-                            sprintf(
-                                '<info>Module %s already exist in config file</info>',
-                                $classModule
-                            )
-                        );
-                        continue;
-                    }
-                    $writeFile = true;
-                    $modulesStr .= "\t\t$classModule::class,\n";
-                    if (!$useStr) {
-                        $useStr = "";
-                    }
-                    $useStr .= "use $useStatement;\n";
-
+            $modulesStr = trim($modulesStr) . "\n";
+            foreach ($modules as $useStatement => $classModule) {
+                if (str_contains($modulesStr, $classModule . '::class')) {
                     $this->io->write(
                         sprintf(
-                            '<info>Write module %s in config file</info>',
+                            '<info>Module %s already exist in config file</info>',
                             $classModule
                         )
                     );
+                    continue;
                 }
+                $writeFile = true;
+                $modulesStr .= "\t\t$classModule::class,\n";
+                $useStr .= "use $useStatement;\n";
+
+                $this->io->write(
+                    sprintf(
+                        '<info>Write module %s in config file</info>',
+                        $classModule
+                    )
+                );
             }
             if ($writeFile) {
+                $useStr = trim($useStr);
                 $modulesStr = trim($modulesStr);
                 return (bool)$this->writeFile($configFile, $useStr, "\t\t" . $modulesStr);
             }
         }
-        return true;
+        $this->io->write('<info>Nothing to update in config file.</info>');
+        return false;
     }
 
-    protected function writeFile(string $configFile, string $useStr, string $modulesStr): bool|int
+    public function writeFile(string $configFile, string $useStr, string $modulesStr): bool|int
     {
         $content = <<<php
 <?php
@@ -286,6 +321,7 @@ class ModuleInstaller implements
 declare(strict_types=1);
 
 %s
+
 return [
     'modules' => [
 %s
@@ -293,6 +329,6 @@ return [
 ];
 
 php;
-        return file_put_contents($configFile, sprintf($content, $useStr, $modulesStr), LOCK_EX);
+        return file_put_contents($configFile, sprintf($content, $useStr, $modulesStr), $this->writeLockEx);
     }
 }
