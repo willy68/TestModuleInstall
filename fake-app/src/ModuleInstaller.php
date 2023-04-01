@@ -126,7 +126,7 @@ class ModuleInstaller implements
             if ($package->getType() === 'pg-module') {
                 $this->io->write(
                     sprintf(
-                        '<info>  Found pg-module type package: %s</info>',
+                        '<info>Found pg-module type package: %s</info>',
                         $package->getPrettyName()
                     )
                 );
@@ -248,7 +248,7 @@ class ModuleInstaller implements
                 $this->modules[$namespace . '\\' . $moduleName] = $moduleName;
                 $this->io->write(
                     sprintf(
-                        '<info>      Found pg-module: %s</info>',
+                        '<info>  Found pg-module: %s</info>',
                         $moduleName
                     )
                 );
